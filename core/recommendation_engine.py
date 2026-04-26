@@ -210,8 +210,25 @@ class RecommendationEngine:
             category = str(row.get("category", "")).strip().lower()
 
             # Get weights for category
-            weights = WEIGHTS.get(category, WEIGHTS["food_assistance"])
+           # 🔥 NEW: Dynamic weighting based on user urgency
+            user_urgency = self._safe_int(getattr(user_profile, "urgency_level", 3))
 
+            if user_urgency >= 4:
+                  weights = {
+                        "location": 0.25,
+                       "completeness": 0.1,
+                      "eligibility": 0.2,
+                     "urgency": 0.4,
+                    "county": 0.05
+    }
+            else:
+                     weights = {
+                         "location": 0.3,
+                         "completeness": 0.15,
+                         "eligibility": 0.25,
+                         "urgency": 0.2,
+                         "county": 0.1
+    }
             # Final weighted score
             final_score = (
                 weights["location"] * location_base +
