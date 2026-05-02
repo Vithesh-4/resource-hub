@@ -41,6 +41,9 @@ class DataLoader:
             # Clean and standardize data
             resources_df = self._standardize_resources(resources_df)
             county_df = self._standardize_counties(county_df)
+            #  NEW: DATA VALIDATION 
+            self._validate_resources(resources_df)
+            self._validate_counties(county_df)
 
             return resources_df, county_df
 
@@ -136,3 +139,30 @@ class DataLoader:
         df["unemployment_rate"] = pd.to_numeric(df["unemployment_rate"], errors="coerce")
 
         return df.reset_index(drop=True)
+        #new
+    def _validate_resources(self, df):
+        if df.empty:
+            raise ValueError("Resources dataset is empty")
+
+        missing_names = df["name"].isna().sum()
+        if missing_names > 0:
+            print(f"Warning: {missing_names} resources missing names")
+
+        missing_zip = df["zip_code"].eq("").sum()
+        if missing_zip > 0:
+            print(f"Warning: {missing_zip} resources missing ZIP codes")
+
+    def _validate_counties(self, df):
+        if df.empty:
+            print("Warning: County dataset is empty")
+            return
+
+        if "poverty_rate" in df.columns:
+            missing = df["poverty_rate"].isna().sum()
+            if missing > 0:
+                print(f"Warning: {missing} counties missing poverty rate")
+
+        if "unemployment_rate" in df.columns:
+            missing = df["unemployment_rate"].isna().sum()
+            if missing > 0:
+                print(f"Warning: {missing} counties missing unemployment rate")
